@@ -46,8 +46,6 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
   }
 
   private void getAccelerometer(SensorEvent event) {
-    float[] values = event.values;
-    // Movement
     float x = values[0];
     float y = values[1];
     float z = values[2];
