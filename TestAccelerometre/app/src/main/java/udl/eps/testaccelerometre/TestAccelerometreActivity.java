@@ -17,7 +17,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
   private TextView view;
   private long lastUpdate;
 
-  
+  //asd
 /** Called when the activity is first created. */
 
   @Override
