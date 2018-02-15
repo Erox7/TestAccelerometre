@@ -41,7 +41,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     view.setBackgroundColor(Color.GREEN);
     TextView bottomView = (TextView) findViewById(R.id.textView3);
     bottomView.setBackgroundColor(Color.YELLOW);
-
+    //ACCELOMETER
     sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     TextView center = (TextView) findViewById(R.id.textView);
     if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -55,8 +55,22 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
               accelometer.getPower() + "\nMaximum Range: " + accelometer.getMaximumRange();
       center.setText(getString(R.string.shake) + "\n" + capabilities);
     }else{
-      center.setText(R.string.noAccel);
+      center.setText(getString(R.string.noAccel));
     }
+
+    //LIGHT SENSOR
+    if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
+      Sensor light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+      sensorManager.registerListener(this,
+              light,
+              SensorManager.SENSOR_DELAY_NORMAL);
+      // register this class as a listener for the accelerometer sensor
+      bottomView.setText(getString(R.string.lightSensorUp) + "\n" + light.getMaximumRange());
+    }else{
+      bottomView.setText(getString(R.string.noLightSensor));
+    }
+
+
       lastUpdate = System.currentTimeMillis();
 
   }
