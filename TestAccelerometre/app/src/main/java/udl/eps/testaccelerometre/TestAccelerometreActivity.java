@@ -7,6 +7,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import java.lang.Math;
 
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,10 +24,13 @@ El 7é no l'aplique, l'afegim al manifest.
 
  */
 public class TestAccelerometreActivity extends Activity implements SensorEventListener {
-  private SensorManager sensorManager;
+  private SensorManager sensorManager,lightManager;
+  private Sensor accelometer, light;
   private boolean color = false;
-  private TextView view;
+  private TextView view, bottomView;
   private long lastUpdate;
+  private float[] intervals = {0,0};
+  private float oldLux;
 
 
 /** Called when the activity is first created. */
@@ -39,13 +43,13 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     setContentView(R.layout.main);
     view = (TextView) findViewById(R.id.textView2);
     view.setBackgroundColor(Color.GREEN);
-    TextView bottomView = (TextView) findViewById(R.id.textView3);
+    bottomView = (TextView) findViewById(R.id.textView3);
     bottomView.setBackgroundColor(Color.YELLOW);
     //ACCELOMETER
     sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     TextView center = (TextView) findViewById(R.id.textView);
     if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-      Sensor accelometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+      accelometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
       sensorManager.registerListener(this,
               accelometer,
               SensorManager.SENSOR_DELAY_NORMAL);
@@ -59,25 +63,52 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     }
 
     //LIGHT SENSOR
-    if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
-      Sensor light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-      sensorManager.registerListener(this,
+    lightManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+    if (lightManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
+      light = lightManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+      lightManager.registerListener(this,
               light,
               SensorManager.SENSOR_DELAY_NORMAL);
       // register this class as a listener for the accelerometer sensor
       bottomView.setText(getString(R.string.lightSensorUp) + "\n" + light.getMaximumRange());
+      intervals[0] = (light.getMaximumRange() / 3);
+      intervals[1] = intervals[0] * 2;
+
     }else{
       bottomView.setText(getString(R.string.noLightSensor));
     }
-
-
       lastUpdate = System.currentTimeMillis();
 
   }
 
   @Override
   public void onSensorChanged(SensorEvent event) {
-          getAccelerometer(event);
+    if(event.sensor == accelometer) {
+      getAccelerometer(event);
+    }
+    if(event.sensor == light){
+      getLightSensor(event);
+    }
+  }
+
+  private void getLightSensor(SensorEvent event) {
+    long actualTime = System.currentTimeMillis();
+    float currentLux = event.values[0];
+    if((Math.abs(oldLux - currentLux)) >= 1000.0) {
+      if (actualTime - lastUpdate < 200) {
+        return;
+      }
+
+      bottomView.setText(bottomView.getText() + "\nNew value light sensor = " + currentLux);
+      if (currentLux < intervals[0]) {
+        bottomView.setText(bottomView.getText() + "\nINTENSITY = LOW");
+      } else if (currentLux > intervals[1]) {
+        bottomView.setText(bottomView.getText() + "\nINTENSITY = MAX");
+      } else {
+        bottomView.setText(bottomView.getText() + "\nINTENSITY = MEDIUM");
+      }
+      oldLux = currentLux;
+    }
   }
 
   private void getAccelerometer(SensorEvent event) {
@@ -118,5 +149,6 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     // unregister listener
     super.onPause();
     sensorManager.unregisterListener(this);
+    lightManager.unregisterListener(this);
   }
 } 
